@@ -1,16 +1,4 @@
-/*
-A simple web server using an Arduino Wiznet Ethernet shield. 
-For Arduino IDE V1.0 only. Previous IDE versions require mods to this code.
-
-Original code created 18 Dec 2009
- by David A. Mellis
- modified 4 Sep 2010
- by Tom Igoe
- modified 18 Jan 2012
- by Tim Dicus 
-*/
-
-#include <SPI.h>
+//Tito Alvi N.
 #include <Ethernet.h>
 
 // Enter a MAC address and IP address for your controller below.
@@ -26,53 +14,50 @@ IPAddress dns( 192,168,1,1 );
 // (port 80 is default for HTTP):
 EthernetServer server(80);
 
-void setup()
-{
-  Serial.begin(9600);
+void konek(){
 
-  // set SPI SS pins on w5100 and SD
-  pinMode(10,OUTPUT);
-  digitalWrite(10,HIGH);
-  pinMode(4,OUTPUT);
-  digitalWrite(4,HIGH);
-
-  // start the SD interface here if you want.
-  // Add the SD.h library above
-  // SD.begin(4);
-
-  // start the Ethernet connection and the server:
-  Ethernet.begin(mac, ip, dns, gateway, subnet);
-  // disable w5100 SPI so SD SPI can work with it
-  digitalWrite(10,HIGH);
-  delay(2000);
-  server.begin();
-
-  Serial.println("setup finished");
-}
-
-void loop()
-{
-  // listen for incoming clients
-  EthernetClient client = server.available();
-  if (client) {
-    Serial.println("Client");
+    // listen for incoming clients
+    EthernetClient client = server.available();
+    if (client) {
+    Serial.println("Client Terhubung\n");
     // an http request ends with a blank line
     boolean currentLineIsBlank = true;
+    boolean currentLineIsGet = true; //tambahan
+    int tCount = 0;
+    char tBuf[64];
+    char a,b;
+    int r,t;
+    char *pch;
+
+    
     while (client.connected()) {
       while(client.available()) {
         char c = client.read();
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
         // so you can send a reply
-        if (c == '\n' && currentLineIsBlank) {
 
-// Here is where the POST data is.  
+        //tambahan
+        if(currentLineIsGet && tCount < 63)
+        {
+          tBuf[tCount] = c;
+          tCount++;
+          tBuf[tCount] = 0;          
+        }
+
+        
+        if (c == '\n' && currentLineIsBlank) {
+          //Data terkirim di sini
+          int x=0, n=0;
+          for(x=0;x<=60;x++){
+          Serial.print(tBuf[n]);
+          n++;}
           while(client.available())
           {
              Serial.write(client.read());
           }
           Serial.println(); //kasih jarak
-
+        
           Serial.println("Sending response");
           // send a standard http response header
           client.println("HTTP/1.0 200 OK");
@@ -84,6 +69,7 @@ void loop()
         else if (c == '\n') {
           // you're starting a new line
           currentLineIsBlank = true;
+          currentLineIsGet = false;
         } 
         else if (c != '\r') {
           // you've gotten a character on the current line
@@ -91,6 +77,22 @@ void loop()
         }
       }
     }
-    Serial.println("Disconnected");
+    Serial.println("Sambungan Terputus!");
   }
 }
+
+void setup()
+{
+  Serial.begin(9600);
+  Ethernet.begin(mac, ip, dns, gateway, subnet);
+  server.begin();
+  Serial.println("Setting HTTP Selesai :) \nLanjutkan Masbro!");
+}
+
+void loop()
+{
+  konek();
+
+ }
+
+
